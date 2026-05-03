@@ -74,3 +74,7 @@ export interface IWebhookConfig {
   method:       string;
   responseMode: 'immediately' | 'lastNode';
 }
+
+export interface IScheduleConfig {
+  cronExpression: string;
+}

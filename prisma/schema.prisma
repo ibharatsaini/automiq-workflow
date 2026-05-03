@@ -1,0 +1,117 @@
+
+
+generator client {
+  provider = "prisma-client-ts"
+  output   = "../src/generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  admin
+  editor
+  viewer
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  passwordHash String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  memberships  ProjectMember[]
+}
+
+
+model Project {
+  id          String          @id @default(uuid())
+  name        String
+  subdomain   String          @unique
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  members     ProjectMember[]
+  workflows   Workflow[]
+  credentials Credential[]
+  executions  Execution[]
+
+  @@index([subdomain])
+}
+
+/// Role is project-scoped: one user can be admin on "acme" and viewer on "beta".
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      UserRole @default(viewer)
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Workflow {
+  id          String     @id @default(uuid())
+  name        String
+  active      Boolean    @default(false)
+  nodes       Json
+  connections Json
+  settings    Json       @default("{}")
+  projectId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  executions Execution[]
+
+  @@index([projectId])
+  @@index([active])
+}
+
+
+model Execution {
+  id             String    @id @default(uuid())
+  workflowId     String
+  workflowName   String
+  mode           String
+  status         String    @default("running")
+  triggerNode    String?
+  triggerItems   Json?
+  executionOrder Json?
+  runData        Json?
+  projectId      String
+  startedAt      DateTime  @default(now())
+  finishedAt     DateTime?
+
+  workflow Workflow @relation(fields: [workflowId], references: [id])
+  project  Project  @relation(fields: [projectId], references: [id])
+
+  @@index([workflowId])
+  @@index([projectId])
+  @@index([status])
+}
+
+
+//Store Telegram ,Slack credentials
+model Credential {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  data      String
+  projectId String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type])
+}
