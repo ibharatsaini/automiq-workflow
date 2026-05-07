@@ -17,5 +17,9 @@ export class GlobalConfig {
   get slackApiBaseUrl(): string {
     return process.env.SLACK_API_BASE_URL ?? 'https://slack.com/api';
   }
+  
+   get telegramApiBaseUrl(): string {
+    return process.env.TELEGRAM_API_BASE_URL ?? 'https://api.telegram.org';
+  }
 
 }

@@ -78,3 +78,10 @@ export interface IWebhookConfig {
 export interface IScheduleConfig {
   cronExpression: string;
 }
+
+
+export interface ITelegramCredential {
+  accessToken: string;
+  baseUrl?: string;
+}
+
