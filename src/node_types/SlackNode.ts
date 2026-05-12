@@ -1,13 +1,11 @@
-// src/node-types/SlackNode.ts
-//
-// Same architecture as TelegramNode: direct REST call to Slack's Web API
-// chat.postMessage endpoint using a Bot token — no Slack SDK. Mirrors
-// real n8n's Slack.node.ts pattern.
-
-import { BaseNode } from './BaseNode';
-import { renderTemplate } from '../lib/expression';
-import { GlobalConfig } from '../config/GlobalConfig';
-import { IExecuteContext, INodeExecutionData, INodeTypeDescription } from '../lib/types';
+import { BaseNode } from "./BaseNode";
+import { renderTemplate } from "../lib/expression";
+import { GlobalConfig } from "../config/GlobalConfig";
+import {
+  IExecuteContext,
+  INodeExecutionData,
+  INodeTypeDescription,
+} from "../lib/types";
 
 interface SlackCredential {
   botToken: string;
@@ -16,9 +14,9 @@ interface SlackCredential {
 
 export class SlackNode extends BaseNode {
   readonly description: INodeTypeDescription = {
-    name: 'slack',
-    displayName: 'Slack',
-    group: 'action',
+    name: "slack",
+    displayName: "Slack",
+    group: "action",
   };
 
   constructor(private readonly config: GlobalConfig) {
@@ -34,31 +32,41 @@ export class SlackNode extends BaseNode {
     const url = `${baseUrl}/${endpoint}`;
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${credential.botToken}`,
       },
       body: JSON.stringify(body),
     });
 
-    const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-    if (!response.ok || data['ok'] === false) {
-      throw new Error(`Slack API error: ${String(data['error'] ?? response.statusText)}`);
+    const data = (await response.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
+    if (!response.ok || data["ok"] === false) {
+      throw new Error(
+        `Slack API error: ${String(data["error"] ?? response.statusText)}`,
+      );
     }
     return data;
   }
 
   async execute(context: IExecuteContext): Promise<INodeExecutionData[][]> {
     const inputItems = context.getInputData();
-    const credential = (await context.getCredentials('slackApi')) as unknown as SlackCredential;
-    const channel    = context.getNodeParameter<string>('channel');
-    const textTpl    = context.getNodeParameter<string>('text');
+    const credential = (await context.getCredentials(
+      "slackApi",
+    )) as unknown as SlackCredential;
+    const channel = context.getNodeParameter<string>("channel");
+    const textTpl = context.getNodeParameter<string>("text");
 
     const outputItems: INodeExecutionData[] = [];
     for (const item of inputItems) {
-      const text   = renderTemplate(textTpl, item);
-      const result = await this.apiRequest(credential, 'chat.postMessage', { channel, text });
+      const text = renderTemplate(textTpl, item);
+      const result = await this.apiRequest(credential, "chat.postMessage", {
+        channel,
+        text,
+      });
       outputItems.push({ json: result });
     }
     return [outputItems];

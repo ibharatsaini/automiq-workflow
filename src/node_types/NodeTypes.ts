@@ -1,20 +1,19 @@
-
-import { INodeType } from '../lib/types';
-import { WebhookNode }  from './WebhookNode';
-import { ScheduleNode } from './ScheduleNode';
-import { IfNode }       from './IfNode';
-import { TelegramNode } from './TelegramNode';
-import { SlackNode }    from './SlackNode';
+import { INodeType } from "../lib/types";
+import { WebhookNode } from "./WebhookNode";
+import { ScheduleNode } from "./ScheduleNode";
+import { IfNode } from "./IfNode";
+import { TelegramNode } from "./TelegramNode";
+import { SlackNode } from "./SlackNode";
 
 export class NodeTypes {
   private readonly registry = new Map<string, INodeType>();
 
   constructor(
-    webhookNode:  WebhookNode,
+    webhookNode: WebhookNode,
     scheduleNode: ScheduleNode,
-    ifNode:       IfNode,
+    ifNode: IfNode,
     telegramNode: TelegramNode,
-    slackNode:    SlackNode,
+    slackNode: SlackNode,
   ) {
     this.register(webhookNode);
     this.register(scheduleNode);

@@ -1,13 +1,10 @@
-
-
 export interface INodeExecutionData {
   json: Record<string, unknown>;
 }
 
-
 export interface IConnection {
   node: string;
-  type: 'main';
+  type: "main";
   index: number;
 }
 
@@ -41,7 +38,6 @@ export interface IWorkflowDefinition {
   settings?: IWorkflowSettings;
 }
 
-
 export interface IExecuteContext {
   getInputData(): INodeExecutionData[];
   getNodeParameter<T = unknown>(name: string, fallback?: T): T;
@@ -50,38 +46,31 @@ export interface IExecuteContext {
   getCredentials(type: string): Promise<Record<string, unknown>>;
 }
 
-
 export interface INodeTypeDescription {
   name: string;
   displayName: string;
   /** Used by ActiveWorkflowManager to know how to handle activation. */
-  group: 'trigger' | 'transform' | 'action';
+  group: "trigger" | "transform" | "action";
   /** Named output ports. Defaults to ['main']. If node must have two output["true","false"], declare it. */
   outputs?: string[];
 }
-
 
 export interface INodeType {
   description: INodeTypeDescription;
   execute(context: IExecuteContext): Promise<INodeExecutionData[][]>;
 }
 
-
-
-
 export interface IWebhookConfig {
-  path:         string;
-  method:       string;
-  responseMode: 'immediately' | 'lastNode';
+  path: string;
+  method: string;
+  responseMode: "immediately" | "lastNode";
 }
 
 export interface IScheduleConfig {
   cronExpression: string;
 }
 
-
 export interface ITelegramCredential {
   accessToken: string;
   baseUrl?: string;
 }
-

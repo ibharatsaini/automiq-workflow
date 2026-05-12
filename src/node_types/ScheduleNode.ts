@@ -1,21 +1,21 @@
-import cron from 'node-cron';
-import { BaseNode } from './BaseNode';
+import cron from "node-cron";
+import { BaseNode } from "./BaseNode";
 import {
   IExecuteContext,
   INodeExecutionData,
   INodeTypeDescription,
   IScheduleConfig,
-} from '../lib/types';
+} from "../lib/types";
 
 export class ScheduleNode extends BaseNode {
   readonly description: INodeTypeDescription = {
-    name: 'schedule',
-    displayName: 'Schedule Trigger',
-    group: 'trigger',
+    name: "schedule",
+    displayName: "Schedule Trigger",
+    group: "trigger",
   };
 
   getScheduleConfig(parameters: Record<string, unknown>): IScheduleConfig {
-    const expr = parameters['cronExpression'] as string | undefined;
+    const expr = parameters["cronExpression"] as string | undefined;
     if (!expr) throw new Error('Schedule node is missing a "cronExpression" parameter');
     if (!cron.validate(expr)) {
       throw new Error(`Schedule node has an invalid cron expression: "${expr}"`);
@@ -29,6 +29,6 @@ export class ScheduleNode extends BaseNode {
   }
 
   async execute(_context: IExecuteContext): Promise<INodeExecutionData[][]> {
-    throw new Error('ScheduleNode.execute() should never be called by the engine');
+    throw new Error("ScheduleNode.execute() should never be called by the engine");
   }
 }
