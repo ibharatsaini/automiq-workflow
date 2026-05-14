@@ -1,4 +1,3 @@
-// src/repositories/UserRepository.ts
 import { PrismaService } from "../services/PrismaService";
 import { IUser } from "../lib/auth.types";
 import type { User } from "../generated/prisma/client/client";
