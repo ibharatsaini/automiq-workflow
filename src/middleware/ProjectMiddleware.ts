@@ -29,7 +29,7 @@ export class ProjectMiddleware {
     next();
   };
 
- 
+  //Fetches user's project role.
   loadProjectRole: RequestHandler = async (
     req: Request, res: Response, next: NextFunction,
   ): Promise<void> => {
@@ -38,7 +38,7 @@ export class ProjectMiddleware {
       return;
     }
 
-    const role = "admin"
+    const role = await this.projectService.getMemberRole(req.project.id, req.user.id);
     if (!role) {
       res.status(403).json({ error: 'You are not a member of this project' });
       return;
@@ -54,6 +54,7 @@ export class ProjectMiddleware {
     const explicit = req.headers['x-project-subdomain'];
     if (explicit && typeof explicit === 'string') return explicit.toLowerCase().trim();
 
+    // Extract from Host header: "myproject.localhost:5678" → "myproject"
     const host = req.headers['host'] ?? '';
     const parts = host.split('.');
     if (parts.length >= 2) {

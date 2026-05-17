@@ -31,7 +31,7 @@ export class AuthMiddleware {
     }
   };
 
-  require(minimumRole: UserRole): RequestHandler {
+  requiredRole(minimumRole: UserRole): RequestHandler {
     return (req: Request, res: Response, next: NextFunction): void => {
       const role = req.user?.role;
       if (!role) {

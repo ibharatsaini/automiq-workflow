@@ -15,6 +15,7 @@ async function bootstrap(): Promise<void> {
   app.use(express.json());
   //   console.log(`lsdfj`)
   app.use("/auth", container.authRouter.router);
+  app.use("/projects", container.projectsRouter.router)
 
   app.get("/", (_, res) => {
     res.json({
