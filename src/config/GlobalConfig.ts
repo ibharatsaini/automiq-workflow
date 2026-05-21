@@ -23,4 +23,11 @@ export class GlobalConfig {
   get jwtSecret(): string {
     return process.env["JWT_SECRET"] ?? "dev-secret-change-in-production";
   }
+
+
+
+  get encryptionKey(): string | undefined {
+    return process.env.ENCRYPTION_KEY;
+  }
+  
 }

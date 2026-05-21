@@ -16,6 +16,8 @@ async function bootstrap(): Promise<void> {
   //   console.log(`lsdfj`)
   app.use("/auth", container.authRouter.router);
   app.use("/projects", container.projectsRouter.router)
+  app.use('/credentials', container.credRouter.router);
+
 
   app.get("/", (_, res) => {
     res.json({
