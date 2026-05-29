@@ -1,6 +1,7 @@
 import { ProjectRepository }       from '../repositories/ProjectRepository';
+import { ProjectMemberRepository } from '../repositories/ProjectMemberRepository';
 import { UserRepository }          from '../repositories/UserRepository.js';
-import { IProject }                from '../lib/project.types';
+import { IProject }                from '../lib/project.types.js';
 import { UserRole }                from '../lib/auth.types.js';
 
 const SUBDOMAIN_RE = /^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$/;
@@ -9,10 +10,9 @@ const RESERVED = new Set(['www', 'api', 'admin', 'app', 'mail', 'webhook', 'heal
 export class ProjectService {
   constructor(
     private readonly projectRepo:  ProjectRepository,
+    private readonly memberRepo:   ProjectMemberRepository,
     private readonly userRepo:     UserRepository,
   ) {}
-
-  // ── Create ────────────────────────────────────────────────────────────────
 
   async createProject(
     name: string,
@@ -26,12 +26,15 @@ export class ProjectService {
 
     const project = await this.projectRepo.create({ name, subdomain });
 
-
+    // Owner automatically becomes project admin.
+    await this.memberRepo.upsert({ projectId: project.id, userId: ownerUserId, role: 'admin' });
 
     return project;
   }
 
   // ── Member management ────────────────────────────────────────────────────
+
+  //Invites a already existing user with given role or create a new user if not present already.
   async inviteMember(
     projectId: string,
     email: string,
@@ -42,16 +45,29 @@ export class ProjectService {
     let isNewUser = false;
 
     if (!user) {
-      // Auto-create a stub account — user will need to change password.
+      // Auto-create a temp account — user will need to change password.
       const bcrypt = await import('bcrypt');
       const hash = await bcrypt.hash(temporaryPassword, 12);
       user = await this.userRepo.create({ email, passwordHash: hash });
       isNewUser = true;
     }
 
+    await this.memberRepo.upsert({ projectId, userId: user.id, role });
     return { userId: user.id, email: user.email, role, isNewUser };
   }
 
+  async removeMember(projectId: string, userId: string): Promise<void> {
+    await this.memberRepo.remove(projectId, userId);
+  }
+
+  async listMembers(projectId: string) {
+    return this.memberRepo.findAllByProject(projectId);
+  }
+
+  async getMemberRole(projectId: string, userId: string): Promise<UserRole | null> {
+    const member = await this.memberRepo.findByProjectAndUser(projectId, userId);
+    return member?.role ?? null;
+  }
 
   // ── Lookup ────────────────────────────────────────────────────────────────
 

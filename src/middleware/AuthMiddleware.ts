@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { AuthService } from "../services/AuthService";
-import { UserRole } from "../lib/auth.types.js";
+import { UserRole } from "../lib/auth.types";
 
 const ROLE_RANK: Record<UserRole, number> = { viewer: 0, editor: 1, admin: 2 };
 

@@ -30,10 +30,5 @@ export class CredentialsService {
     await this.repo.delete(id, projectId);
   }
 
-  async upsertSeedCredential(name: string, type: string, data: Record<string, unknown>, projectId: string): Promise<string> {
-    const existing = await this.repo.findByType(type, projectId);
-    if (existing) return existing['id'] as string;
-    const created = await this.create(name, type, data, projectId);
-    return created.id;
-  }
+  
 }

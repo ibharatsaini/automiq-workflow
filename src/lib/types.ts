@@ -74,3 +74,26 @@ export interface ITelegramCredential {
   accessToken: string;
   baseUrl?: string;
 }
+
+
+export type RunMode  = 'webhook' | 'trigger' | 'manual';
+export type RunStatus = 'running' | 'success' | 'error';
+
+export interface IRunData {
+  [nodeName: string]: INodeRunData;
+}
+
+export interface IRunExecutionResult {
+  runData:        IRunData;
+  executionOrder: string[];
+}
+
+export interface INodeRunData {
+  startedAt:   string;
+  finishedAt?: string;
+  /** Items from output port 0 — convenience alias. */
+  items?:      INodeExecutionData[];
+  /** Full multi-port output — outputBranches[portIndex] → items */ 
+  branches?:   INodeExecutionData[][];
+  error?:      string;
+}

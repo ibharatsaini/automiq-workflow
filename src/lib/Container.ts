@@ -1,23 +1,28 @@
 import { GlobalConfig } from "../config/GlobalConfig";
 import { AuthMiddleware } from "../middleware/AuthMiddleware";
 import { ProjectMiddleware } from "../middleware/ProjectMiddleware";
-import { IfNode } from "../node_types/IfNode";
-import { NodeTypes } from "../node_types/NodeTypes";
-import { ScheduleNode } from "../node_types/ScheduleNode";
-import { SlackNode } from "../node_types/SlackNode";
-import { TelegramNode } from "../node_types/TelegramNode";
-import { WebhookNode } from "../node_types/WebhookNode";
+import { IfNode } from "../node-types/IfNode";
+import { NodeTypes } from "../node-types/NodeTypes";
+import { ScheduleNode } from "../node-types/ScheduleNode";
+import { SlackNode } from "../node-types/SlackNode";
+import { TelegramNode } from "../node-types/TelegramNode";
+import { WebhookNode } from "../node-types/WebhookNode";
 import { CredentialsRepository } from "../repositories/CredentialsRepository";
+import { ExecutionRepository } from "../repositories/ExecutionRepository";
 import { ProjectMemberRepository } from "../repositories/ProjectMemberRepository";
 import { ProjectRepository } from "../repositories/ProjectRepository";
 import { UserRepository } from "../repositories/UserRepository";
+import { WorkflowRepository } from "../repositories/WorkflowRepository";
 import { AuthRouter } from "../routes/AuthRouter";
 import { CredentialsRouter } from "../routes/CredentialsRouter";
 import { ProjectsRouter } from "../routes/ProjectsRouter";
+import { WorkflowsRouter } from "../routes/WorkflowsRouter";
+import { ActiveWorkflowManager } from "../services/ActiveWorkflowManager";
 import { AuthService } from "../services/AuthService";
 import { CredentialsService } from "../services/CredentialsService";
 import { PrismaService } from "../services/PrismaService";
 import { ProjectService } from "../services/ProjectService";
+import { WorkflowExecutionService } from "../services/WorkflowExecutionService";
 
 export class Container {
   readonly config: GlobalConfig;
@@ -25,6 +30,8 @@ export class Container {
   readonly prisma: PrismaService;
   readonly authService: AuthService;
   readonly projectService: ProjectService;
+  readonly executionService: WorkflowExecutionService;
+  readonly activeWorkflowMgr: ActiveWorkflowManager;
 
   //Nodes
   readonly webhookNode: WebhookNode;
@@ -40,6 +47,7 @@ export class Container {
   readonly authRouter: AuthRouter;
   readonly projectsRouter: ProjectsRouter;
   readonly credRouter: CredentialsRouter;
+  readonly workflowRouter: WorkflowsRouter;
 
   readonly authMiddleware: AuthMiddleware;
   readonly projectMiddleware: ProjectMiddleware;
@@ -49,9 +57,8 @@ export class Container {
   readonly projectRepo: ProjectRepository;
   readonly memeberRepo: ProjectMemberRepository;
   readonly credRepo: CredentialsRepository;
-
-
-  
+  readonly workflowRepo: WorkflowRepository;
+  readonly executionRepo: ExecutionRepository;
 
   constructor() {
     this.config = new GlobalConfig();
@@ -72,20 +79,59 @@ export class Container {
     );
 
     this.userRepo = new UserRepository(this.prisma);
-    this.projectRepo = new ProjectRepository(this.prisma)
-    this.memeberRepo = new ProjectMemberRepository(this.prisma)
-    this.credRepo = new CredentialsRepository(this.prisma)
+    this.projectRepo = new ProjectRepository(this.prisma);
+    this.memeberRepo = new ProjectMemberRepository(this.prisma);
+    this.credRepo = new CredentialsRepository(this.prisma);
+    this.workflowRepo = new WorkflowRepository(this.prisma);
+    this.executionRepo = new ExecutionRepository(this.prisma);
 
     this.authService = new AuthService(this.userRepo, this.config);
-    this.projectService= new ProjectService(this.projectRepo, this.memeberRepo, this.userRepo)
-    this.credentialsService = new CredentialsService(this.credRepo, this.config)
+    this.projectService = new ProjectService(
+      this.projectRepo,
+      this.memeberRepo,
+      this.userRepo,
+    );
+    this.credentialsService = new CredentialsService(
+      this.credRepo,
+      this.config,
+    );
+    this.executionService = new WorkflowExecutionService(
+      this.config,
+      this.executionRepo,
+      this.nodeTypes,
+      this.credentialsService,
+    );
+    this.activeWorkflowMgr = new ActiveWorkflowManager(
+      this.workflowRepo,
+      this.nodeTypes,
+      this.executionService,
+    );
 
     this.authMiddleware = new AuthMiddleware(this.authService);
-    this.projectMiddleware = new ProjectMiddleware(this.projectService)
+    this.projectMiddleware = new ProjectMiddleware(this.projectService);
 
-
-    this.authRouter = new AuthRouter(this.authService, this.authMiddleware, this.projectService);
-    this.projectsRouter = new ProjectsRouter(this.projectService, this.authMiddleware, this.projectMiddleware)
-    this.credRouter = new CredentialsRouter(this.credentialsService, this.authMiddleware, this.projectMiddleware)
+    this.authRouter = new AuthRouter(
+      this.authService,
+      this.authMiddleware,
+      this.projectService,
+    );
+    this.projectsRouter = new ProjectsRouter(
+      this.projectService,
+      this.authMiddleware,
+      this.projectMiddleware,
+    );
+    this.credRouter = new CredentialsRouter(
+      this.credentialsService,
+      this.authMiddleware,
+      this.projectMiddleware,
+    );
+    this.workflowRouter = new WorkflowsRouter(
+      this.workflowRepo,
+      this.activeWorkflowMgr,
+      this.executionService,
+      this.nodeTypes,
+      this.authMiddleware,
+      this.projectMiddleware,
+    );
   }
 }
