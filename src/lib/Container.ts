@@ -16,6 +16,7 @@ import { WorkflowRepository } from "../repositories/WorkflowRepository";
 import { AuthRouter } from "../routes/AuthRouter";
 import { CredentialsRouter } from "../routes/CredentialsRouter";
 import { ProjectsRouter } from "../routes/ProjectsRouter";
+import { WebhookRouter } from "../routes/WebhookRouter";
 import { WorkflowsRouter } from "../routes/WorkflowsRouter";
 import { ActiveWorkflowManager } from "../services/ActiveWorkflowManager";
 import { AuthService } from "../services/AuthService";
@@ -48,6 +49,7 @@ export class Container {
   readonly projectsRouter: ProjectsRouter;
   readonly credRouter: CredentialsRouter;
   readonly workflowRouter: WorkflowsRouter;
+  readonly webhookRouter:     WebhookRouter;
 
   readonly authMiddleware: AuthMiddleware;
   readonly projectMiddleware: ProjectMiddleware;
@@ -133,5 +135,6 @@ export class Container {
       this.authMiddleware,
       this.projectMiddleware,
     );
+    this.webhookRouter = new WebhookRouter(this.activeWorkflowMgr,this.workflowRepo,this.executionService,this.nodeTypes,this.projectMiddleware)
   }
 }

@@ -17,7 +17,7 @@ async function bootstrap(): Promise<void> {
   app.use("/auth", container.authRouter.router);
   app.use("/projects", container.projectsRouter.router)
   app.use('/workflows',   container.workflowRouter.router);
-
+  app.use('/webhook', container.webhookRouter.router)
   app.use('/credentials', container.credRouter.router);
 
 
