@@ -97,3 +97,12 @@ export interface INodeRunData {
   branches?:   INodeExecutionData[][];
   error?:      string;
 }
+
+
+export interface IJobData {
+  executionId: string;
+}
+
+export type IJobMessage =
+  | { kind: 'job-finished'; executionId: string; success: true }
+  | { kind: 'job-failed';   executionId: string; success: false; error: string };

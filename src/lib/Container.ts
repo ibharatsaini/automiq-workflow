@@ -1,6 +1,7 @@
 import { GlobalConfig } from "../config/GlobalConfig";
 import { AuthMiddleware } from "../middleware/AuthMiddleware";
 import { ProjectMiddleware } from "../middleware/ProjectMiddleware";
+import { CodeNode } from "../node-types/CodeNode";
 import { IfNode } from "../node-types/IfNode";
 import { NodeTypes } from "../node-types/NodeTypes";
 import { ScheduleNode } from "../node-types/ScheduleNode";
@@ -15,9 +16,12 @@ import { UserRepository } from "../repositories/UserRepository";
 import { WorkflowRepository } from "../repositories/WorkflowRepository";
 import { AuthRouter } from "../routes/AuthRouter";
 import { CredentialsRouter } from "../routes/CredentialsRouter";
+import { ExecutionsRouter } from "../routes/ExecutionsRouter";
 import { ProjectsRouter } from "../routes/ProjectsRouter";
 import { WebhookRouter } from "../routes/WebhookRouter";
 import { WorkflowsRouter } from "../routes/WorkflowsRouter";
+import { CodeSandbox } from "../sandbox/CodeSandbox";
+import { ScalingService } from "../scaling/ScalingService";
 import { ActiveWorkflowManager } from "../services/ActiveWorkflowManager";
 import { AuthService } from "../services/AuthService";
 import { CredentialsService } from "../services/CredentialsService";
@@ -33,16 +37,23 @@ export class Container {
   readonly projectService: ProjectService;
   readonly executionService: WorkflowExecutionService;
   readonly activeWorkflowMgr: ActiveWorkflowManager;
+  readonly scalingService: ScalingService;
 
   //Nodes
   readonly webhookNode: WebhookNode;
   readonly scheduleNode: ScheduleNode;
   readonly ifNode: IfNode;
+  readonly codeNode: CodeNode;
   readonly telegramNode: TelegramNode;
   readonly slackNode: SlackNode;
 
+
   //nodetypes
   readonly nodeTypes: NodeTypes;
+
+
+  //sandbox
+  readonly codeSandbox: CodeSandbox;
 
   //Routers
   readonly authRouter: AuthRouter;
@@ -50,6 +61,7 @@ export class Container {
   readonly credRouter: CredentialsRouter;
   readonly workflowRouter: WorkflowsRouter;
   readonly webhookRouter:     WebhookRouter;
+  readonly executionRouter: ExecutionsRouter;
 
   readonly authMiddleware: AuthMiddleware;
   readonly projectMiddleware: ProjectMiddleware;
@@ -66,16 +78,20 @@ export class Container {
     this.config = new GlobalConfig();
     this.prisma = new PrismaService(this.config);
 
+    this.codeSandbox = new CodeSandbox();
+
     this.webhookNode = new WebhookNode();
     this.scheduleNode = new ScheduleNode();
     this.ifNode = new IfNode();
     this.telegramNode = new TelegramNode(this.config);
     this.slackNode = new SlackNode(this.config);
+    this.codeNode = new CodeNode(this.codeSandbox)
 
     this.nodeTypes = new NodeTypes(
       this.webhookNode,
       this.scheduleNode,
       this.ifNode,
+      this.codeNode,
       this.telegramNode,
       this.slackNode,
     );
@@ -97,11 +113,13 @@ export class Container {
       this.credRepo,
       this.config,
     );
+    this.scalingService = new ScalingService(this.config)
     this.executionService = new WorkflowExecutionService(
       this.config,
       this.executionRepo,
       this.nodeTypes,
       this.credentialsService,
+      this.scalingService
     );
     this.activeWorkflowMgr = new ActiveWorkflowManager(
       this.workflowRepo,
@@ -135,6 +153,7 @@ export class Container {
       this.authMiddleware,
       this.projectMiddleware,
     );
-    this.webhookRouter = new WebhookRouter(this.activeWorkflowMgr,this.workflowRepo,this.executionService,this.nodeTypes,this.projectMiddleware)
+    this.webhookRouter = new WebhookRouter(this.activeWorkflowMgr,this.workflowRepo,this.executionService,this.nodeTypes,this.projectMiddleware);
+    this.executionRouter = new ExecutionsRouter(this.executionRepo,this.authMiddleware,this.projectMiddleware)
   }
 }

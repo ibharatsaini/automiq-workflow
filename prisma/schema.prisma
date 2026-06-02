@@ -89,6 +89,7 @@ model Execution {
   executionOrder Json?
   runData        Json?
   projectId      String
+  error          String?
   startedAt      DateTime  @default(now())
   finishedAt     DateTime?
 

@@ -2,6 +2,7 @@ import { INodeType } from "../lib/types";
 import { WebhookNode } from "./WebhookNode";
 import { ScheduleNode } from "./ScheduleNode";
 import { IfNode } from "./IfNode";
+import { CodeNode }     from './CodeNode';
 import { TelegramNode } from "./TelegramNode";
 import { SlackNode } from "./SlackNode";
 
@@ -12,6 +13,7 @@ export class NodeTypes {
     webhookNode: WebhookNode,
     scheduleNode: ScheduleNode,
     ifNode: IfNode,
+    codeNode: CodeNode,
     telegramNode: TelegramNode,
     slackNode: SlackNode,
   ) {
@@ -20,6 +22,7 @@ export class NodeTypes {
     this.register(ifNode);
     this.register(telegramNode);
     this.register(slackNode);
+    this.register(codeNode)
   }
 
   private register(node: INodeType): void {

@@ -29,5 +29,22 @@ export class GlobalConfig {
   get encryptionKey(): string | undefined {
     return process.env.ENCRYPTION_KEY;
   }
+
+  get executionsMode(): 'regular' | 'queue' {
+    return process.env.EXECUTIONS_MODE === 'queue' ? 'queue' : 'regular';
+  }
+
+  get bullQueueName(): string {
+    return process.env.BULL_QUEUE_NAME ?? 'automiq-clone:execute-workflow';
+  }
+
+   get redisHost(): string {
+    return process.env.REDIS_HOST ?? '127.0.0.1';
+  }
+
+  get redisPort(): number {
+    return Number(process.env.REDIS_PORT ?? 6379);
+  }
+
   
 }
