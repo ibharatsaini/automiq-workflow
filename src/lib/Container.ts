@@ -155,5 +155,13 @@ export class Container {
     );
     this.webhookRouter = new WebhookRouter(this.activeWorkflowMgr,this.workflowRepo,this.executionService,this.nodeTypes,this.projectMiddleware);
     this.executionRouter = new ExecutionsRouter(this.executionRepo,this.authMiddleware,this.projectMiddleware)
+
+
+    this.authRouter.setup();
+    this.projectsRouter.setup();
+    this.workflowRouter.setup();
+    this.webhookRouter.setup();
+    this.executionRouter.setup();
+    this.credRouter.setup();
   }
 }

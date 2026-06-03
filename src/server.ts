@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import cors from 'cors'
 import { Container } from "./lib/Container";
 
 async function bootstrap(): Promise<void> {
@@ -13,10 +14,11 @@ async function bootstrap(): Promise<void> {
 
   const app = express();
   app.use(express.json());
+  app.use(cors())
   //   console.log(`lsdfj`)
-  app.use("/auth", container.authRouter.router);
+  app.use("/auth",     container.authRouter.router);
   app.use("/projects", container.projectsRouter.router)
-  app.use('/workflows',   container.workflowRouter.router);
+  app.use('/workflows',container.workflowRouter.router);
   app.use('/webhook', container.webhookRouter.router);
   app.use("/executions", container.executionRouter.router);
   app.use('/credentials', container.credRouter.router);

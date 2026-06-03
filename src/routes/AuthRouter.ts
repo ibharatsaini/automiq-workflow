@@ -27,6 +27,7 @@ export class AuthRouter extends BaseRouter {
   }
 
   private async login(req: Request, res: Response): Promise<void> {
+    console.log(`Login inside.`)
     const { email, password } = req.body as {
       email?: string;
       password?: string;

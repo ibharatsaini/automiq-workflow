@@ -35,6 +35,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ token: string; user: IAuthUser }> {
+    console.log(`Login.`)
     const user = await this.userRepo.findByEmail(email);
 
     if (!user) throw new Error("Invalid email or password");
