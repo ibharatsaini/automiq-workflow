@@ -6,6 +6,8 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { WorkflowDetailPage } from "./features/workflows/WorkflowDetailPage";
 import { WorkflowsPage } from "./features/workflows/WorkflowsPage";
 import { GuestRoute, ProtectedRoute } from "./components/routes";
+import { ExecutionsPage } from "./features/executions/ExecutionsPage";
+import { ExecutionDetailPage } from "./features/executions/ExecutionDetailPage";
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/workflows" element={<WorkflowsPage />} />
+            <Route path="/executions" element={<ExecutionsPage />} />
+            <Route path="/executions/:id" element={<ExecutionDetailPage />} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
