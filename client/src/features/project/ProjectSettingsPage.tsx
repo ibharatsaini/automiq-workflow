@@ -134,9 +134,14 @@ function InviteMemberModal({
     mutationFn: projectsApi.inviteMember,
     onSuccess: (d) => {
       qc.invalidateQueries({ queryKey: ["project-members"] });
-      toast.success(
-        `${d.email} invited as ${d.role}${d.isNewUser ? " (new account created)" : ""}`,
-      );
+      // toast.success(
+      //   `${d.email} invited as ${d.role}${d.isNewUser ? " (new account created)" : ""}`,
+      // );
+      toast.success(`Invitation sent to ${d.email}`, {
+        description: d.isNewUser
+          ? `New account created as ${d.role}. A welcome email has been sent.`
+          : `Added as ${d.role}. A notification email has been sent.`,
+      });
       reset();
       onClose();
     },

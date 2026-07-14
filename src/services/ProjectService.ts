@@ -1,17 +1,27 @@
-import { ProjectRepository }       from '../repositories/ProjectRepository';
-import { ProjectMemberRepository } from '../repositories/ProjectMemberRepository';
-import { UserRepository }          from '../repositories/UserRepository.js';
-import { IProject }                from '../lib/project.types.js';
-import { UserRole }                from '../lib/auth.types.js';
+import { ProjectRepository } from "../repositories/ProjectRepository";
+import { ProjectMemberRepository } from "../repositories/ProjectMemberRepository";
+import { UserRepository } from "../repositories/UserRepository.js";
+import { IProject } from "../lib/project.types.js";
+import { UserRole } from "../lib/auth.types.js";
+import { EmailService } from "./EmailService";
 
 const SUBDOMAIN_RE = /^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$/;
-const RESERVED = new Set(['www', 'api', 'admin', 'app', 'mail', 'webhook', 'health']);
+const RESERVED = new Set([
+  "www",
+  "api",
+  "admin",
+  "app",
+  "mail",
+  "webhook",
+  "health",
+]);
 
 export class ProjectService {
   constructor(
-    private readonly projectRepo:  ProjectRepository,
-    private readonly memberRepo:   ProjectMemberRepository,
-    private readonly userRepo:     UserRepository,
+    private readonly projectRepo: ProjectRepository,
+    private readonly memberRepo: ProjectMemberRepository,
+    private readonly userRepo: UserRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async createProject(
@@ -27,7 +37,11 @@ export class ProjectService {
     const project = await this.projectRepo.create({ name, subdomain });
 
     // Owner automatically becomes project admin.
-    await this.memberRepo.upsert({ projectId: project.id, userId: ownerUserId, role: 'admin' });
+    await this.memberRepo.upsert({
+      projectId: project.id,
+      userId: ownerUserId,
+      role: "admin",
+    });
 
     return project;
   }
@@ -40,19 +54,36 @@ export class ProjectService {
     email: string,
     role: UserRole,
     temporaryPassword: string,
-  ): Promise<{ userId: string; email: string; role: UserRole; isNewUser: boolean }> {
+    invitedByEmail: string,
+    subdomain: string,
+    projectName: string,
+  ): Promise<{
+    userId: string;
+    email: string;
+    role: UserRole;
+    isNewUser: boolean;
+  }> {
     let user = await this.userRepo.findByEmail(email);
     let isNewUser = false;
 
     if (!user) {
       // Auto-create a temp account — user will need to change password.
-      const bcrypt = await import('bcrypt');
+      const bcrypt = await import("bcrypt");
       const hash = await bcrypt.hash(temporaryPassword, 12);
       user = await this.userRepo.create({ email, passwordHash: hash });
       isNewUser = true;
     }
 
     await this.memberRepo.upsert({ projectId, userId: user.id, role });
+    await this.emailService.sendInvitation({
+      toEmail: email,
+      invitedByEmail,
+      projectName,
+      subdomain,
+      role,
+      temporaryPassword,
+      isNewUser,
+    });
     return { userId: user.id, email: user.email, role, isNewUser };
   }
 
@@ -64,12 +95,16 @@ export class ProjectService {
     return this.memberRepo.findAllByProject(projectId);
   }
 
-  async getMemberRole(projectId: string, userId: string): Promise<UserRole | null> {
-    const member = await this.memberRepo.findByProjectAndUser(projectId, userId);
+  async getMemberRole(
+    projectId: string,
+    userId: string,
+  ): Promise<UserRole | null> {
+    const member = await this.memberRepo.findByProjectAndUser(
+      projectId,
+      userId,
+    );
     return member?.role ?? null;
   }
-
-  // ── Lookup ────────────────────────────────────────────────────────────────
 
   async findBySubdomain(subdomain: string): Promise<IProject | null> {
     return this.projectRepo.findBySubdomain(subdomain);
@@ -79,13 +114,11 @@ export class ProjectService {
     return this.projectRepo.findAll();
   }
 
-  // ── Validation ────────────────────────────────────────────────────────────
-
   private validateSubdomain(subdomain: string): void {
     if (!SUBDOMAIN_RE.test(subdomain)) {
       throw new Error(
-        'Subdomain must be 3–50 lowercase alphanumeric characters or hyphens, ' +
-        'cannot start or end with a hyphen',
+        "Subdomain must be 3–50 lowercase alphanumeric characters or hyphens, " +
+          "cannot start or end with a hyphen",
       );
     }
     if (RESERVED.has(subdomain)) {

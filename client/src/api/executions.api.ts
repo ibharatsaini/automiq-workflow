@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from "../lib/axios";
 import type { Execution } from "@/types";
 export const executionsApi = {
   list: async (workflowId?: string) =>
@@ -10,4 +10,3 @@ export const executionsApi = {
   get: async (id: string) =>
     (await api.get<Execution>(`/executions/${id}`)).data,
 };
-

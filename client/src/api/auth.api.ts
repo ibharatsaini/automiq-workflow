@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from "../lib/axios";
 import type { LoginResponse, RegisterResponse, AuthUser } from "@/types";
 export const authApi = {
   login: async (d: { email: string; password: string; subdomain: string }) => {

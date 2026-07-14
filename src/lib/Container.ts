@@ -25,6 +25,7 @@ import { ScalingService } from "../scaling/ScalingService";
 import { ActiveWorkflowManager } from "../services/ActiveWorkflowManager";
 import { AuthService } from "../services/AuthService";
 import { CredentialsService } from "../services/CredentialsService";
+import { EmailService } from "../services/EmailService";
 import { PrismaService } from "../services/PrismaService";
 import { ProjectService } from "../services/ProjectService";
 import { WorkflowExecutionService } from "../services/WorkflowExecutionService";
@@ -38,6 +39,7 @@ export class Container {
   readonly executionService: WorkflowExecutionService;
   readonly activeWorkflowMgr: ActiveWorkflowManager;
   readonly scalingService: ScalingService;
+  readonly emailService: EmailService;
 
   //Nodes
   readonly webhookNode: WebhookNode;
@@ -47,10 +49,8 @@ export class Container {
   readonly telegramNode: TelegramNode;
   readonly slackNode: SlackNode;
 
-
   //nodetypes
   readonly nodeTypes: NodeTypes;
-
 
   //sandbox
   readonly codeSandbox: CodeSandbox;
@@ -60,7 +60,7 @@ export class Container {
   readonly projectsRouter: ProjectsRouter;
   readonly credRouter: CredentialsRouter;
   readonly workflowRouter: WorkflowsRouter;
-  readonly webhookRouter:     WebhookRouter;
+  readonly webhookRouter: WebhookRouter;
   readonly executionRouter: ExecutionsRouter;
 
   readonly authMiddleware: AuthMiddleware;
@@ -77,6 +77,7 @@ export class Container {
   constructor() {
     this.config = new GlobalConfig();
     this.prisma = new PrismaService(this.config);
+    this.emailService = new EmailService(this.config);
 
     this.codeSandbox = new CodeSandbox();
 
@@ -85,7 +86,7 @@ export class Container {
     this.ifNode = new IfNode();
     this.telegramNode = new TelegramNode(this.config);
     this.slackNode = new SlackNode(this.config);
-    this.codeNode = new CodeNode(this.codeSandbox)
+    this.codeNode = new CodeNode(this.codeSandbox);
 
     this.nodeTypes = new NodeTypes(
       this.webhookNode,
@@ -108,18 +109,19 @@ export class Container {
       this.projectRepo,
       this.memeberRepo,
       this.userRepo,
+      this.emailService,
     );
     this.credentialsService = new CredentialsService(
       this.credRepo,
       this.config,
     );
-    this.scalingService = new ScalingService(this.config)
+    this.scalingService = new ScalingService(this.config);
     this.executionService = new WorkflowExecutionService(
       this.config,
       this.executionRepo,
       this.nodeTypes,
       this.credentialsService,
-      this.scalingService
+      this.scalingService,
     );
     this.activeWorkflowMgr = new ActiveWorkflowManager(
       this.workflowRepo,
@@ -151,11 +153,21 @@ export class Container {
       this.executionService,
       this.nodeTypes,
       this.authMiddleware,
+
       this.projectMiddleware,
     );
-    this.webhookRouter = new WebhookRouter(this.activeWorkflowMgr,this.workflowRepo,this.executionService,this.nodeTypes,this.projectMiddleware);
-    this.executionRouter = new ExecutionsRouter(this.executionRepo,this.authMiddleware,this.projectMiddleware)
-
+    this.webhookRouter = new WebhookRouter(
+      this.activeWorkflowMgr,
+      this.workflowRepo,
+      this.executionService,
+      this.nodeTypes,
+      this.projectMiddleware,
+    );
+    this.executionRouter = new ExecutionsRouter(
+      this.executionRepo,
+      this.authMiddleware,
+      this.projectMiddleware,
+    );
 
     this.authRouter.setup();
     this.projectsRouter.setup();

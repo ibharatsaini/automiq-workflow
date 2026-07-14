@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from "../lib/axios";
 import type { Credential } from "@/types";
 export const credentialsApi = {
   list: async () => (await api.get<Credential[]>("/credentials")).data,
