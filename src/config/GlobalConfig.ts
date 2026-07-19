@@ -48,7 +48,15 @@ export class GlobalConfig {
     return process.env["MAILSENDER_APIKEY"];
   }
 
-  get mailSenderFromEmail(): string | undefined{
+  get mailSenderFromEmail(): string | undefined {
     return process.env["MAILSENDER_USERNAME"];
+  }
+
+  get corsOrigins(): string[] {
+    const raw = process.env["CORS_ORIGIN"] ?? "http://localhost:3000";
+    return raw
+      .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
   }
 }

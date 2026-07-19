@@ -16,8 +16,22 @@ async function bootstrap(): Promise<void> {
   app.use(express.json());
   app.use(
     cors({
-      origin: process.env.CLIENT_DOMAIN || "http://localhost:3000",
-      credentials: true,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+
+        if (container.config.corsOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+
+        callback(new Error(`CORS: origin "${origin}" not allowed`));
+      },
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Project-Subdomain",
+      ],
+      credentials: true
     }),
   );
   //   console.log(`lsdfj`)
