@@ -56,5 +56,7 @@ export class GlobalConfig {
     const raw = process.env["CORS_ORIGIN"] ?? "http://localhost:3000";
     return raw
       .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
   }
 }
