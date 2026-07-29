@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import { authApi } from '@/api/auth.api'
 import { projectsApi } from '@/api/projects.api'
 import { useAuthStore } from '@/store/auth.store'
-import { useThemeStore } from '@/store/theme.store'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import axios from 'axios'
 

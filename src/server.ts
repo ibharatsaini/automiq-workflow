@@ -7,7 +7,7 @@ import { Container } from "./lib/Container";
 
 async function bootstrap(): Promise<void> {
   const container = new Container();
-
+  const { port, corsOrigins } = container.config;
   await container.prisma.connect();
   console.log("[server] database connected!");
   // console.log
@@ -18,20 +18,22 @@ async function bootstrap(): Promise<void> {
     cors({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-
-        if (container.config.corsOrigins.includes(origin)) {
+        console.log(
+          `Hello1`,
+          origin,
+          corsOrigins,
+          corsOrigins.includes(origin),
+        );
+        if (corsOrigins.includes(origin)) {
+          console.log(`Hello`, origin);
           return callback(null, true);
         }
 
         callback(new Error(`CORS: origin "${origin}" not allowed`));
       },
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "X-Project-Subdomain",
-      ],
-      credentials: true
+      allowedHeaders: ["Content-Type", "Authorization", "X-Project-Subdomain"],
+      credentials: true,
     }),
   );
   //   console.log(`lsdfj`)
@@ -47,8 +49,6 @@ async function bootstrap(): Promise<void> {
       service: "automiq-api",
     });
   });
-
-  const { port } = container.config;
 
   app.listen(port, () => {
     console.log(`[server] http://localhost:${port}`);
