@@ -9,3 +9,4 @@ client/node_modules
 client/dist
 a.js
 client/.env
+prisma/generated
